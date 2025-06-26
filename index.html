@@ -10,6 +10,7 @@
     h1 { text-align: center; }
     .search-bar { text-align: center; margin-bottom: 20px; }
     input[type="text"] { padding: 8px; width: 90%; max-width: 400px; }
+    
     .cards {
       display: flex;
       flex-wrap: wrap;
@@ -27,11 +28,19 @@
       flex-direction: column;
       align-items: center;
       background-color: #fff;
+      min-height: 400px; /* 商品1枚あたりの想定高さ */
+
     }
     .card img {
       max-width: 100%;
       height: auto;
       margin-bottom: 10px;
+      width: 100%;
+      aspect-ratio: 3 / 4;  /* 例：縦長の酒瓶用比率 */
+      object-fit: cover;
+      display: block;
+      background-color: #f4f4f4; /* 画像がない時の背景 */
+
     }
     .card h3 { margin-top: 0; text-align: center; }
     .quote-button { margin-top: 10px; }
@@ -45,6 +54,7 @@
     @media screen and (max-width: 600px) {
       .card { width: 100%; }
     }
+  
   </style>
 </head>
 <body>
@@ -80,7 +90,7 @@
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-          <img src="${imgSrc}" alt="商品画像" onerror="this.src='image/placeholder.jpg'">
+          <img src="${imgSrc}" alt="商品画像" onerror="">
           <h3>${item.商品名.trim()}</h3>
           <p><strong>蔵元:</strong> ${item.蔵元 || 'ー'}</p>
           <p><strong>産地:</strong> ${item.産地 || 'ー'}</p>
