@@ -1,133 +1,137 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>(株)よつや外商部</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>（株）よつや外商部</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    h1 { text-align: center; }
-    .search-bar { text-align: center; margin-bottom: 20px; }
-    input[type="text"] { padding: 8px; width: 90%; max-width: 400px; }
-    
-    .cards {
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background-color: #fdfdfd;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .search-bar {
+      max-width: 600px;
+      margin: 1rem auto;
       display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
       justify-content: center;
     }
-    .card {
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 16px;
-      width: calc(33% - 40px);
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: #fff;
-      min-height: 400px; /* 商品1枚あたりの想定高さ */
-
-    }
-    .card img {
-      max-width: 100%;
-      height: auto;
-      margin-bottom: 10px;
+    .search-bar input {
       width: 100%;
-      aspect-ratio: 3 / 4;  /* 例：縦長の酒瓶用比率 */
-      object-fit: cover;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .card {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      width: 30%;
+      min-width: 280px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 1rem;
+    }
+    .card h3 {
+      margin: 0.5rem 0;
+    }
+    .card p {
+      margin: 0.2rem 0;
+      font-size: 0.9rem;
+    }
+    .estimate-button {
       display: block;
-      background-color: #f4f4f4; /* 画像がない時の背景 */
-
+      margin: 2rem auto;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
-    .card h3 { margin-top: 0; text-align: center; }
-    .quote-button { margin-top: 10px; }
-    .quote-list { margin-top: 40px; }
-    .quote-item { border-top: 1px solid #ccc; padding: 10px 0; }
-
-    @media screen and (max-width: 1024px) {
-      .card { width: calc(50% - 40px); }
+    @media screen and (max-width: 768px) {
+      .card {
+        width: 90%;
+      }
     }
-
-    @media screen and (max-width: 600px) {
-      .card { width: 100%; }
-    }
-  
   </style>
 </head>
 <body>
-  <h1>(株)よつや外商部</h1>
+  <header>（株）よつや外商部</header>
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="商品名・蔵元・グレードで検索">
+    <input type="text" id="search" placeholder="商品を検索...">
   </div>
-  <div class="cards" id="cardContainer"></div>
-
-  <div class="quote-list">
-    <h2>見積もりリスト</h2>
-    <div id="quoteList"></div>
-  </div>
+  <div class="card-container" id="card-container"></div>
+  <button class="estimate-button" onclick="generateEstimate()">見積もり作成する</button>
 
   <script>
     let data = [];
-    let quoteItems = [];
 
-    fetch('sake_list.json')
-      .then(res => res.json())
-      .then(json => {
-        data = json;
-        displayCards(data);
-      });
+    async function loadData() {
+      const res = await fetch('sake_list.json');
+      data = await res.json();
+      renderCards(data);
+    }
 
-    function displayCards(items) {
-      const container = document.getElementById('cardContainer');
-      container.innerHTML = '';
+    function renderCards(items) {
+      const container = document.getElementById("card-container");
+      container.innerHTML = "";
       items.forEach(item => {
-        const jan = item['720mL500mLJAN'] || item['1800mL　JAN'] || item['360mL300mL180mL　JAN'] || '';
-        const imgSrc = jan ? `image/${jan.toString().replace('.0','')}.jpg` : 'image/placeholder.jpg';
-
-        const card = document.createElement('div');
-        card.className = 'card';
+        const janCode = String(item["720mL500mLJAN"] || "").trim();
+        const imageSrc = janCode ? `image/${janCode}.jpg` : 'image/placeholder.jpg';
+        const card = document.createElement("div");
+        card.className = "card";
         card.innerHTML = `
-          <img src="${imgSrc}" alt="商品画像" onerror="">
-          <h3>${item.商品名.trim()}</h3>
-          <p><strong>蔵元:</strong> ${item.蔵元 || 'ー'}</p>
-          <p><strong>産地:</strong> ${item.産地 || 'ー'}</p>
-          <p><strong>グレード:</strong> ${item.グレード || 'ー'}</p>
-          <p><strong>コメント:</strong> ${item.コメント || ''}</p>
-          <p><strong>価格:</strong> 720mL: ${item['720mL500mL価格税抜'] || 'ー'}円</p>
-          <button class="quote-button" onclick='addToQuote("${item.商品名.trim()}", ${item['720mL500mL価格税抜'] || 0})'>見積もりに追加</button>
+          <div style="width: 100%; aspect-ratio: 1 / 1; background-color: #eee; margin-bottom: 0.5rem;">
+            <img src="${imageSrc}" alt="商品画像" 
+              style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" 
+              onerror="this.onerror=null;this.src='image/placeholder.jpg';">
+          </div>
+          <h3>${item["商品名"] || "名称不明"}</h3>
+          <p><strong>蔵元:</strong> ${item["蔵元"]}</p>
+          <p><strong>産地:</strong> ${item["産地"]}</p>
+          <p><strong>グレード:</strong> ${item["グレード"]}</p>
+          <p><strong>容量:</strong> 720mL</p>
+          <p><strong>価格:</strong> ${item["720mL500mL価格税抜"] || "―"} 円</p>
         `;
         container.appendChild(card);
       });
     }
 
-    function addToQuote(name, price) {
-      quoteItems.push({ name, price });
-      updateQuoteList();
-    }
-
-    function updateQuoteList() {
-      const list = document.getElementById('quoteList');
-      list.innerHTML = '';
-      let total = 0;
-      quoteItems.forEach((item, index) => {
-        total += parseInt(item.price) || 0;
-        list.innerHTML += `<div class="quote-item">${index + 1}. ${item.name} - ${item.price}円</div>`;
-      });
-      list.innerHTML += `<div class="quote-item"><strong>合計:</strong> ${total}円</div>`;
-    }
-
-    document.getElementById('searchInput').addEventListener('input', function() {
-      const keyword = this.value.toLowerCase();
-      const filtered = data.filter(item =>
-        (item.商品名 || '').toLowerCase().includes(keyword) ||
-        (item.蔵元 || '').toLowerCase().includes(keyword) ||
-        (item.グレード || '').toLowerCase().includes(keyword)
+    document.getElementById("search").addEventListener("input", e => {
+      const keyword = e.target.value.toLowerCase();
+      const filtered = data.filter(item => 
+        item["商品名"]?.toLowerCase().includes(keyword) || 
+        item["蔵元"]?.toLowerCase().includes(keyword)
       );
-      displayCards(filtered);
+      renderCards(filtered);
     });
+
+    function generateEstimate() {
+      alert("見積もり機能は現在準備中です。");
+    }
+
+    loadData();
   </script>
 </body>
 </html>
