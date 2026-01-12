@@ -492,8 +492,8 @@ header {
     display: -webkit-box;
     display: box;
     /* fallback */
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
     /* compatibility */
     -webkit-box-orient: vertical;
     overflow: hidden;
