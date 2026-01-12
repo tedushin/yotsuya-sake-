@@ -60,24 +60,25 @@
   </footer>
 
   <!-- プレビューモーダル -->
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>プレビューを作成中</h2>
-      <button class="btn btn-secondary" onclick="closePreview()">✕</button>
+  <div id="preview-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>プレビューを作成中</h2>
+        <button class="btn btn-secondary" onclick="closePreview()">✕</button>
+      </div>
+      <div class="modal-settings">
+        <label for="addressee-input">宛名:</label>
+        <input type="text" id="addressee-input" placeholder="会社名・お名前 (例：〇〇株式会社)">
+        <span>御中</span>
+      </div>
+      <div class="modal-body" id="preview-content">
+        <!-- ここにプレビューページが生成されます -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closePreview()">キャンセル</button>
+        <button class="btn btn-primary" onclick="downloadPDF()">PDFをダウンロード</button>
+      </div>
     </div>
-    <div class="modal-settings">
-      <label for="addressee-input">宛名:</label>
-      <input type="text" id="addressee-input" placeholder="会社名・お名前 (例：〇〇株式会社)">
-      <span>御中</span>
-    </div>
-    <div class="modal-body" id="preview-content">
-      <!-- ここにプレビューページが生成されます -->
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closePreview()">キャンセル</button>
-      <button class="btn btn-primary" onclick="downloadPDF()">PDFをダウンロード</button>
-    </div>
-  </div>
   </div>
 
   <div id="estimate-capture"></div>
