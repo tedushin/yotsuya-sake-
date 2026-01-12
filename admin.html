@@ -259,6 +259,22 @@
     <script>
         let sakeData = [];
 
+        // 画像読み込みエラー時のフォールバック処理
+        window.handleImageError = function (img, jan) {
+            const retryExtensions = ['png', 'jpeg', 'JPG', 'PNG'];
+            let attempt = parseInt(img.dataset.attempt || 0);
+
+            if (attempt >= retryExtensions.length) {
+                img.src = 'image/placeholder.jpg';
+                img.onerror = null;
+                return;
+            }
+
+            const nextExt = retryExtensions[attempt];
+            img.src = `image/${jan}.${nextExt}`;
+            img.dataset.attempt = attempt + 1;
+        };
+
         // データ読み込み
         async function loadAdminData() {
             try {
@@ -289,7 +305,7 @@
 
                 tr.innerHTML = `
           <td><span class="${isHidden ? 'status-hidden' : 'status-active'}" style="padding:2px 6px; border-radius:4px; font-size:0.8rem;">${isHidden ? '非表示' : '公開'}</span></td>
-          <td><img src="${imgSrc}" style="width:40px; height:40px; object-fit:contain;" onerror="this.src='image/placeholder.jpg'"></td>
+          <td><img src="${imgSrc}" style="width:40px; height:40px; object-fit:contain;" onerror="handleImageError(this, '${jan}')"></td>
           <td style="font-weight:bold;">${item["商品名"] || '(名称未設定)'}</td>
           <td>${item["蔵元"] || ''}</td>
           <td>${item["産地"] || ''}</td>

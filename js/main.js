@@ -3,6 +3,22 @@ let data = [];
 let currentPreviewItems = []; // プレビュー中のアイテムリスト
 let currentPreviewTitle = "";
 
+// 画像読み込みエラー時のフォールバック処理 (jpg -> png -> jpeg -> JPG -> PNG -> placeholder)
+window.handleImageError = function (img, jan) {
+  const retryExtensions = ['png', 'jpeg', 'JPG', 'PNG'];
+  let attempt = parseInt(img.dataset.attempt || 0);
+
+  if (attempt >= retryExtensions.length) {
+    img.src = 'image/placeholder.jpg';
+    img.onerror = null; // これ以上処理しない
+    return;
+  }
+
+  const nextExt = retryExtensions[attempt];
+  img.src = `image/${jan}.${nextExt}`;
+  img.dataset.attempt = attempt + 1;
+};
+
 function checkAll() {
   const checkboxes = document.querySelectorAll('.card-container .card input[type="checkbox"]');
   checkboxes.forEach(cb => cb.checked = true);
@@ -72,7 +88,7 @@ function renderCards(items) {
     card.innerHTML = `
       <input type="checkbox" data-index="${originalIndex}" onclick="event.stopPropagation()"/>
       <div class="card-image-wrapper">
-        <img src="${imageSrc}" alt="${item["商品名"]}" class="card-image" onerror="this.onerror=null;this.src='image/placeholder.jpg';">
+        <img src="${imageSrc}" alt="${item["商品名"]}" class="card-image" onerror="handleImageError(this, '${jan}')">
       </div>
       <h3>${item["商品名"] || "名称不明"}</h3>
       <p><strong>蔵元:</strong> ${item["蔵元"]}</p>
@@ -244,7 +260,7 @@ function renderPreviewPages() {
                 <div class="estimate-item-pdf">
                   <div class="sanchi-label">${item["産地"] || ""}</div>
                   <div style="flex-shrink: 0; width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 2px 0;">
-                    <img src="${imageSrc}" alt="商品画像" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.onerror=null;this.src='image/placeholder.jpg';">
+                    <img src="${imageSrc}" alt="商品画像" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="handleImageError(this, '${jan}')">
                   </div>
                   <div class="info">
                     <h3>${item["商品名"]}</h3>
