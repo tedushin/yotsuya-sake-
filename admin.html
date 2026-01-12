@@ -234,6 +234,20 @@
                             <label>JANコード (1800mL)</label>
                             <input type="text" id="input-jan1800">
                         </div>
+                        <div class="form-group form-full"
+                            style="background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px solid #eee;">
+                            <label>商品の画像登録</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                                <button type="button" class="btn btn-secondary" onclick="searchImage()">画像検索
+                                    (Google)</button>
+                                <span
+                                    style="font-size: 0.8rem; color: #666; display: flex; align-items: center;">画像URLをコピーして貼り付けてください</span>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="input-image-url" placeholder="画像のURLをここに貼り付け">
+                                <button type="button" class="btn btn-primary" onclick="uploadImageFromUrl()">保存</button>
+                            </div>
+                        </div>
                         <div class="form-group form-full">
                             <label>コメント</label>
                             <textarea id="input-comment" rows="3"></textarea>
@@ -427,6 +441,57 @@
             t.innerText = msg;
             t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // 画像検索（Google画像検索を別タブで開く）
+        window.searchImage = function () {
+            const name = document.getElementById('input-name').value;
+            const kuramoto = document.getElementById('input-kuramoto').value;
+            if (!name) {
+                alert('商品名を入力してください');
+                return;
+            }
+            const query = encodeURIComponent(`${kuramoto} ${name}`);
+            const url = `https://www.google.com/search?tbm=isch&q=${query}`;
+            window.open(url, '_blank');
+        }
+
+        // 画像URLアップロード
+        window.uploadImageFromUrl = async function () {
+            const url = document.getElementById('input-image-url').value;
+            const jan720 = document.getElementById('input-jan720').value;
+            // JANコードの優先度: 720ml > 1800ml
+            const jan = jan720 || document.getElementById('input-jan1800').value;
+
+            if (!url) {
+                alert('画像URLを入力してください');
+                return;
+            }
+            if (!jan) {
+                alert('JANコードを入力してください（画像ファイル名になります）');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/upload_image_url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url, jan: jan })
+                });
+
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast('画像を保存しました');
+                    document.getElementById('input-image-url').value = ''; // クリア
+                    // プレビュー画像を更新するためにリロードなどを促すか、あるいは強制リロードでも可
+                    // ここでは簡易的に保存完了だけ伝える
+                } else {
+                    alert('エラー: ' + result.message);
+                }
+
+            } catch (e) {
+                alert('通信エラー: ' + e.message);
+            }
         }
 
         loadAdminData();
