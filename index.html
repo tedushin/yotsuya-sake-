@@ -32,11 +32,13 @@
       </div>
 
       <div class="search-group price-group">
-        <label>価格帯 (税抜): <span id="price-display">上限なし</span></label>
-        <input type="range" id="search-price" min="0" max="20000" step="500" value="20000">
-        <div class="range-minmax">
-          <span>0円</span>
-          <span>20,000円~</span>
+        <label>価格帯 (税抜)</label>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <input type="number" id="search-price-min" placeholder="下限" min="0" step="100"
+            style="padding: 0.5rem; width: 100px; border: 1px solid #ddd; border-radius: 4px;">
+          <span>〜</span>
+          <input type="number" id="search-price-max" placeholder="上限" min="0" step="100"
+            style="padding: 0.5rem; width: 100px; border: 1px solid #ddd; border-radius: 4px;">
         </div>
       </div>
     </div>

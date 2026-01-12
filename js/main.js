@@ -1,5 +1,5 @@
 let data = [];
-const MAX_PRICE_LIMIT = 20000;
+
 let currentPreviewItems = []; // プレビュー中のアイテムリスト
 let currentPreviewTitle = "";
 
@@ -98,13 +98,10 @@ function toggleCardSelection(e, card) {
 function filterData() {
   const keyword = document.getElementById("search-keyword").value.toLowerCase();
   const selectedOrigin = document.getElementById("search-origin").value;
-  const maxPrice = Number(document.getElementById("search-price").value);
-  const priceDisplay = document.getElementById("price-display");
-  if (maxPrice >= MAX_PRICE_LIMIT) {
-    priceDisplay.textContent = "上限なし";
-  } else {
-    priceDisplay.textContent = `${maxPrice.toLocaleString()}円 以下`;
-  }
+  const minPriceStr = document.getElementById("search-price-min").value;
+  const maxPriceStr = document.getElementById("search-price-max").value;
+  const minPrice = minPriceStr ? Number(minPriceStr) : null;
+  const maxPrice = maxPriceStr ? Number(maxPriceStr) : null;
   const filtered = data.filter(item => {
     // 1. 定番除外チェック & 非表示チェック(管理画面連携)
     if (!item["商品名"] || item["商品名"].includes("定番商品はございません")) return false;
@@ -119,13 +116,21 @@ function filterData() {
     });
     if (!(nameMatch || breweryMatch || janMatch)) return false;
     if (selectedOrigin && item["産地"] !== selectedOrigin) return false;
-    if (maxPrice < MAX_PRICE_LIMIT) {
-      const price1800 = Number(item["1800mL価格税抜"]) || 999999;
-      const price720 = Number(item["720mL500mL価格税抜"]) || 999999;
-      const valid1800 = (price1800 > 0 && price1800 <= maxPrice);
-      const valid720 = (price720 > 0 && price720 <= maxPrice);
-      if (!valid1800 && !valid720) return false;
-    }
+    // 価格フィルタ
+    const price1800 = Number(item["1800mL価格税抜"]) || 0;
+    const price720 = Number(item["720mL500mL価格税抜"]) || 0;
+
+    const isPriceInRange = (price) => {
+      if (price <= 0) return false; // 価格未設定は対象外（表示しない）あるいは対象にする？元ロジックは >0 なのでfalse
+      if (minPrice !== null && price < minPrice) return false;
+      if (maxPrice !== null && price > maxPrice) return false;
+      return true;
+    };
+
+    const valid1800 = isPriceInRange(price1800);
+    const valid720 = isPriceInRange(price720);
+
+    if (!valid1800 && !valid720) return false;
     return true;
   });
   renderCards(filtered);
@@ -133,7 +138,8 @@ function filterData() {
 
 document.getElementById("search-keyword").addEventListener("input", filterData);
 document.getElementById("search-origin").addEventListener("change", filterData);
-document.getElementById("search-price").addEventListener("input", filterData);
+document.getElementById("search-price-min").addEventListener("input", filterData);
+document.getElementById("search-price-max").addEventListener("input", filterData);
 
 // ---------------------------------------------------------
 // プレビュー＆PDF生成ロジック
