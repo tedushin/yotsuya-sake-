@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品管理 - （株）よつや外商部</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 管理画面特有のスタイル */
+        body {
+            background-color: #f0f2f5;
+            padding-bottom: 2rem;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .data-table-wrapper {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status-hidden {
+            background-color: #fff0f0;
+            color: #d32f2f;
+        }
+
+        .status-active {
+            color: #2e7d32;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-right: 4px;
+        }
+
+        .btn-edit {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .btn-delete {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .btn-visibility {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+        }
+
+        /* モーダルフォーム */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-full {
+            grid-column: span 2;
+        }
+
+        /* スイッチ */
+        .switch-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* トースト通知 */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 2000;
+        }
+
+        #toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>商品マスター管理</h1>
+            <div>
+                <a href="index.html" class="btn btn-secondary"
+                    style="text-decoration:none; margin-right:1rem;">アプリへ戻る</a>
+                <button class="btn btn-primary" onclick="openModal()">＋ 新規商品登録</button>
+            </div>
+        </div>
+
+        <div class="data-table-wrapper">
+            <table id="sake-table">
+                <thead>
+                    <tr>
+                        <th width="60">状態</th>
+                        <th width="80">画像</th>
+                        <th>商品名</th>
+                        <th>蔵元</th>
+                        <th>産地</th>
+                        <th>価格(1.8L / 720ml)</th>
+                        <th>JAN(720/500)</th>
+                        <th width="180">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- JSで生成 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 編集・登録モーダル -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px; height: auto; max-height: 90vh;">
+            <div class="modal-header">
+                <h2 id="modal-title">商品編集</h2>
+                <button class="btn btn-secondary" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="sake-form">
+                    <input type="hidden" id="edit-index">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>商品名</label>
+                            <input type="text" id="input-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>蔵元</label>
+                            <input type="text" id="input-kuramoto">
+                        </div>
+                        <div class="form-group">
+                            <label>産地</label>
+                            <input type="text" id="input-sanchi">
+                        </div>
+                        <div class="form-group">
+                            <label>グレード</label>
+                            <input type="text" id="input-grade">
+                        </div>
+                        <div class="form-group">
+                            <label>価格(1800mL) 税抜</label>
+                            <input type="number" id="input-price1800">
+                        </div>
+                        <div class="form-group">
+                            <label>価格(720/500mL) 税抜</label>
+                            <input type="number" id="input-price720">
+                        </div>
+                        <div class="form-group">
+                            <label>JANコード (720/500mL)</label>
+                            <input type="text" id="input-jan720" placeholder="画像ファイル名にも使用">
+                        </div>
+                        <div class="form-group">
+                            <label>JANコード (1800mL)</label>
+                            <input type="text" id="input-jan1800">
+                        </div>
+                        <div class="form-group form-full">
+                            <label>コメント</label>
+                            <textarea id="input-comment" rows="3"></textarea>
+                        </div>
+                        <div class="form-group form-full">
+                            <label class="switch-label">
+                                <input type="checkbox" id="input-hidden">
+                                <span>この商品を非表示にする</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+                <button class="btn btn-primary" onclick="saveData()">保存する</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">保存しました</div>
+
+    <script>
+        let sakeData = [];
+
+        // データ読み込み
+        async function loadAdminData() {
+            try {
+                const res = await fetch('sake_list.json?t=' + new Date().getTime()); // キャッシュ回避
+                sakeData = await res.json();
+                renderTable();
+            } catch (e) {
+                alert('データの読み込みに失敗しました');
+                console.error(e);
+            }
+        }
+
+        // テーブル描画
+        function renderTable() {
+            const tbody = document.querySelector('#sake-table tbody');
+            tbody.innerHTML = '';
+
+            sakeData.forEach((item, index) => {
+                const tr = document.createElement('tr');
+
+                // 非表示フラグ
+                const isHidden = item.isHidden === true;
+                if (isHidden) tr.classList.add('status-hidden');
+
+                // 画像パス
+                const jan = item["720mL500mLJAN"];
+                const imgSrc = jan ? `image/${jan}.jpg` : 'image/placeholder.jpg';
+
+                tr.innerHTML = `
+          <td><span class="${isHidden ? 'status-hidden' : 'status-active'}" style="padding:2px 6px; border-radius:4px; font-size:0.8rem;">${isHidden ? '非表示' : '公開'}</span></td>
+          <td><img src="${imgSrc}" style="width:40px; height:40px; object-fit:contain;" onerror="this.src='image/placeholder.jpg'"></td>
+          <td style="font-weight:bold;">${item["商品名"] || '(名称未設定)'}</td>
+          <td>${item["蔵元"] || ''}</td>
+          <td>${item["産地"] || ''}</td>
+          <td>
+            1.8L: ${item["1800mL価格税抜"] || '-'}<br>
+            720ml: ${item["720mL500mL価格税抜"] || '-'}
+          </td>
+          <td>${jan || ''}</td>
+          <td>
+            <button class="action-btn btn-edit" onclick="editItem(${index})">編集</button>
+            <button class="action-btn btn-visibility" onclick="toggleVisibility(${index})">${isHidden ? '公開' : '非表示'}</button>
+            <button class="action-btn btn-delete" onclick="deleteItem(${index})">削除</button>
+          </td>
+        `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // モーダル開閉
+        const modal = document.getElementById('edit-modal');
+        function openModal() {
+            // 新規登録モード
+            document.getElementById('modal-title').innerText = '新規商品登録';
+            document.getElementById('edit-index').value = '-1'; // 新規フラグ
+            document.getElementById('sake-form').reset();
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        // 編集モード
+        window.editItem = function (index) {
+            const item = sakeData[index];
+            document.getElementById('modal-title').innerText = '商品編集';
+            document.getElementById('edit-index').value = index;
+
+            document.getElementById('input-name').value = item["商品名"] || "";
+            document.getElementById('input-kuramoto').value = item["蔵元"] || "";
+            document.getElementById('input-sanchi').value = item["産地"] || "";
+            document.getElementById('input-grade').value = item["グレード"] || "";
+            document.getElementById('input-price1800').value = item["1800mL価格税抜"] || "";
+            document.getElementById('input-price720').value = item["720mL500mL価格税抜"] || "";
+            document.getElementById('input-jan720').value = item["720mL500mLJAN"] || "";
+            document.getElementById('input-jan1800').value = item["1800mL　JAN"] || "";
+            document.getElementById('input-comment').value = item["コメント"] || "";
+            document.getElementById('input-hidden').checked = item.isHidden === true;
+
+            modal.classList.add('active');
+        }
+
+        // 保存処理
+        window.saveData = async function () {
+            const index = parseInt(document.getElementById('edit-index').value);
+            const isNew = index === -1;
+
+            const newItem = {
+                "商品名": document.getElementById('input-name').value,
+                "蔵元": document.getElementById('input-kuramoto').value,
+                "産地": document.getElementById('input-sanchi').value,
+                "グレード": document.getElementById('input-grade').value,
+                "1800mL価格税抜": document.getElementById('input-price1800').value,
+                "720mL500mL価格税抜": document.getElementById('input-price720').value,
+                "720mL500mLJAN": document.getElementById('input-jan720').value,
+                "1800mL　JAN": document.getElementById('input-jan1800').value,
+                "コメント": document.getElementById('input-comment').value,
+                "isHidden": document.getElementById('input-hidden').checked
+            };
+
+            if (isNew) {
+                // 先頭に追加
+                sakeData.unshift(newItem);
+            } else {
+                // 既存データを更新（入力されていないフィールドが消えないようにマージも検討すべきだが、今回はフォームにあるものが主要データなので上書き）
+                // ただし既存の不明なプロパティを消したくない場合は工夫が必要。今回は簡易的にマージ
+                sakeData[index] = { ...sakeData[index], ...newItem };
+            }
+
+            await syncToServer();
+            closeModal();
+        }
+
+        // 削除処理
+        window.deleteItem = async function (index) {
+            if (!confirm('本当に削除してもよろしいですか？')) return;
+            sakeData.splice(index, 1);
+            await syncToServer();
+        }
+
+        // 表示・非表示切り替え
+        window.toggleVisibility = async function (index) {
+            sakeData[index].isHidden = !sakeData[index].isHidden;
+            await syncToServer();
+        }
+
+        // サーバーへ同期
+        async function syncToServer() {
+            try {
+                const res = await fetch('/api/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sakeData)
+                });
+
+                if (!res.ok) throw new Error('サーバーエラー');
+
+                const result = await res.json();
+                // UI更新
+                renderTable();
+                showToast('保存しました');
+            } catch (e) {
+                alert('保存に失敗しました: ' + e.message);
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        loadAdminData();
+    </script>
+</body>
+
+</html>

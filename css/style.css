@@ -1,0 +1,543 @@
+/* ページ全体の基本スタイル */
+body {
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+/* 検索パネルスタイル */
+.search-panel-container {
+    background: white;
+    padding: 1.5rem;
+    margin: 1rem auto;
+    max-width: 900px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.search-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.search-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.search-group label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #555;
+}
+
+.search-group input[type="text"],
+.search-group select {
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: all 0.2s;
+}
+
+.search-group input[type="text"]:focus,
+.search-group select:focus {
+    outline: none;
+    border-color: #2196F3;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+/* スライダーのカスタマイズ */
+.price-group input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+    cursor: pointer;
+    margin: 0.5rem 0;
+}
+
+.price-group input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+}
+
+.price-group input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #2196F3;
+    margin-top: -7px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s;
+}
+
+.price-group input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.range-minmax {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* カードコンテナ */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding: 0 1rem 80px 1rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 商品選択カードのスタイル */
+.card {
+    background-color: white;
+    border: none;
+    border-radius: 12px;
+    width: 300px;
+    /* 固定幅の方が並びが綺麗 */
+    max-width: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    /* カーソルをポインターにする */
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card h3 {
+    margin: 0.8rem 0 0.5rem;
+    font-size: 1.2rem;
+    color: #222;
+}
+
+.card p {
+    margin: 0.3rem 0;
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.card .price-info {
+    font-weight: bold;
+    color: #e91e63;
+    font-size: 1.1rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+
+.card input[type="checkbox"] {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    accent-color: #2196F3;
+}
+
+/* 画像プレースホルダー */
+.card-image-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #f0f0f0;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.card:hover .card-image {
+    transform: scale(1.05);
+}
+
+/* PDF出力ボタン */
+.floating-button-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 999;
+    align-items: flex-end;
+}
+
+.floating-button {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+}
+
+.floating-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5);
+}
+
+.floating-button:active {
+    transform: translateY(0);
+}
+
+/* --- モーダル（プレビュー）用スタイル --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 1000px;
+    height: 90%;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f9fafb;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #111827;
+}
+
+.modal-settings {
+    padding: 1rem 1.5rem;
+    background-color: white;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.modal-settings label {
+    font-weight: bold;
+    color: #374151;
+}
+
+.modal-settings input[type="text"] {
+    flex-grow: 1;
+    max-width: 300px;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: #e5e7eb;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    background-color: white;
+}
+
+.btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-secondary {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+
+/* --- 印刷プレビュー領域（画面表示用） --- */
+/* 
+   A4サイズを模したコンテナ。
+   画面上では縮小して表示し、全体を見やすくする。
+*/
+.preview-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 15mm;
+    box-sizing: border-box;
+    font-family: 'Hiragino Sans', 'ヒラギノ角ゴ Pro W3', 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', sans-serif;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* 子要素の配置用 */
+}
+
+/* PDF生成時のスタイルと共通化 */
+.estimate-header {
+    text-align: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.estimate-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.estimate-meta {
+    display: flex;
+    justify-content: flex-end;
+    /* 右寄せに変更 */
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    font-size: 14px;
+    gap: 20px;
+    position: relative;
+    height: 40px;
+    /* 宛名エリア確保 */
+}
+
+/* 宛名表示 */
+.estimate-addressee {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 1px solid #333;
+    padding-right: 1rem;
+    min-width: 200px;
+}
+
+.estimate-addressee span {
+    font-size: 14px;
+    margin-left: 0.5rem;
+    font-weight: normal;
+}
+
+
+/* 10行固定グリッド */
+.estimate-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(5, 1fr);
+    /* 2列 x 5行 = 10個 */
+    gap: 10px;
+    height: 230mm;
+    /* A4縦の余白を除いたおおよその領域を確保 */
+    margin-bottom: 10px;
+}
+
+.estimate-item-pdf {
+    border: 1px solid #ccc;
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    overflow: hidden;
+    position: relative;
+    background-color: white;
+}
+
+/* 空の行用スタイル */
+.estimate-item-pdf.empty {
+    border: 1px solid #eee;
+    /* 薄くする */
+}
+
+
+.sanchi-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 0 0 8px 0;
+    z-index: 10;
+}
+
+.estimate-item-pdf .info {
+    font-size: 9px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.estimate-item-pdf .info h3 {
+    font-size: 13px;
+    font-weight: bold;
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+}
+
+.estimate-item-pdf .info p {
+    margin: 1px 0;
+}
+
+.estimate-item-pdf .price-info {
+    font-weight: bold;
+    margin-top: 4px !important;
+}
+
+.estimate-item-pdf .info .comment {
+    margin-top: 4px;
+    font-size: 8px;
+    line-height: 1.3;
+    color: #555;
+    display: -webkit-box;
+    display: box;
+    /* fallback */
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    /* compatibility */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.estimate-footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #ccc;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* summaryは削除したがクラス残骸によるスタイルは残していても問題ない */
+
+/* スマホレイアウト調整 */
+@media (max-width: 600px) {
+    .floating-button-container {
+        display: none;
+    }
+
+    body {
+        padding-bottom: 100px;
+    }
+
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+    }
+
+    .preview-page {
+        width: 100%;
+        /* スマホプレビュー時は画面幅に合わせる（比率は崩れるが確認はできる） */
+        min-height: auto;
+        height: auto;
+        padding: 10px;
+    }
+
+    .estimate-grid {
+        grid-template-columns: 1fr;
+        /* スマホプレビューでは1列にするなど */
+        grid-template-rows: auto;
+        height: auto;
+    }
+}
