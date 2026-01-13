@@ -99,10 +99,17 @@
         <h2>プレビューを作成中</h2>
         <button class="btn btn-secondary" onclick="closePreview()">✕</button>
       </div>
-      <div class="modal-settings">
-        <label for="addressee-input">宛名:</label>
-        <input type="text" id="addressee-input" placeholder="会社名・お名前 (例：〇〇株式会社)">
-        <span>御中</span>
+      <div class="modal-settings" style="flex-direction: column; align-items: stretch; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <label for="addressee-input" style="width: 40px;">宛名:</label>
+          <input type="text" id="addressee-input" placeholder="会社名・お名前 (例：〇〇株式会社)" style="flex-grow: 1;">
+          <span>御中</span>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 1rem;">
+          <label for="comment-input" style="width: 40px; padding-top: 8px;">備考:</label>
+          <textarea id="comment-input" maxlength="100" placeholder="備考コメント (100文字まで)"
+            style="flex-grow: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; resize: vertical; min-height: 40px; font-family: inherit;"></textarea>
+        </div>
       </div>
       <div class="modal-body" id="preview-content">
         <!-- ここにプレビューページが生成されます -->

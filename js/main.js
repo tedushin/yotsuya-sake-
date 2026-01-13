@@ -282,10 +282,16 @@ document.getElementById("search-price-max").addEventListener("input", filterData
 const modal = document.getElementById('preview-modal');
 const modalBody = document.getElementById('preview-content');
 const addresseeInput = document.getElementById('addressee-input');
+const commentInput = document.getElementById('comment-input'); // New input
 
 // 宛名入力のイベントリスナー（リアルタイム反映）
 addresseeInput.addEventListener('input', (e) => {
-  updatePreviewAddressee(e.target.value);
+  renderPreviewPages(); // 再描画で一括反映
+});
+
+// コメント入力のイベントリスナー
+commentInput.addEventListener('input', (e) => {
+  renderPreviewPages();
 });
 
 function openPreview(items, title) {
@@ -321,6 +327,7 @@ function renderPreviewPages() {
   });
 
   const addresseeValue = addresseeInput.value;
+  const commentValue = commentInput.value;
 
   for (let i = 0; i < totalPages; i++) {
     const pageIndex = i + 1;
@@ -343,7 +350,7 @@ function renderPreviewPages() {
           <div class="estimate-header">
             <h2>株式会社よつや ${currentPreviewTitle}</h2>
           </div>
-          <div class="estimate-meta">
+          <div class="estimate-meta" style="margin-bottom: 5px;">
             <div class="estimate-addressee">
                 <span class="estimate-addressee-text">${addresseeValue}</span>
                 <span>御中</span>
@@ -354,6 +361,7 @@ function renderPreviewPages() {
                 <div style="font-size: 0.8em; margin-top: 2px;">＊価格は全て税別です。</div>
             </div>
           </div>
+          <div class="estimate-comment" style="margin-bottom: 15px; font-size: 12px; white-space: pre-wrap; min-height: 1em; line-height: 1.4;">${commentValue}</div>
           <div class="estimate-grid">
         `;
 
