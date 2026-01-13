@@ -1,5 +1,18 @@
 let data = [];
 
+// 地方と都道府県のマッピング定義
+const REGIONS = {
+  "北海道": ["北海道"],
+  "東北": ["青森", "岩手", "宮城", "秋田", "山形", "福島"],
+  "関東": ["茨城", "栃木", "群馬", "埼玉", "千葉", "東京", "神奈川"],
+  "甲信越・北陸": ["新潟", "富山", "石川", "福井", "山梨", "長野"],
+  "東海": ["岐阜", "静岡", "愛知", "三重"],
+  "近畿": ["滋賀", "京都", "大阪", "兵庫", "奈良", "和歌山"],
+  "中国": ["鳥取", "島根", "岡山", "広島", "山口"],
+  "四国": ["徳島", "香川", "愛媛", "高知"],
+  "九州・沖縄": ["福岡", "佐賀", "長崎", "熊本", "大分", "宮崎", "鹿児島", "沖縄"]
+};
+
 let currentPreviewItems = []; // プレビュー中のアイテムリスト
 let currentPreviewTitle = "";
 
@@ -29,33 +42,78 @@ function uncheckAll() {
   checkboxes.forEach(cb => cb.checked = false);
 }
 
-async function loadData() {
+function loadData() {
   try {
-    const res = await fetch('sake_list.json');
-    if (!res.ok) throw new Error('JSONファイルの読み込みに失敗しました。');
-    data = await res.json();
+    if (typeof sakeData === 'undefined') {
+      throw new Error('データが読み込めませんでした。(js/data.js check)');
+    }
+    data = sakeData; // グローバル変数から取得
     populateOrigins(data);
     filterData();
   } catch (error) {
     console.error(error);
-    document.getElementById("card-container").innerText = "商品の読み込みに失敗しました。ファイルを確認してください。";
+    document.getElementById("card-container").innerHTML = `<p style="color:red; text-align:center;">商品の読み込みに失敗しました。<br>エラー詳細: ${error.message}</p>`;
   }
 }
 
+// 地方と都道府県のマッピング定義
+
 function populateOrigins(items) {
   const originSelect = document.getElementById('search-origin');
-  const origins = new Set();
+  originSelect.innerHTML = '<option value="">全ての産地</option>'; // リセット
+
+  // データに含まれる産地を抽出
+  const availableOrigins = new Set();
   items.forEach(item => {
     if (item["産地"]) {
-      origins.add(item["産地"]);
+      availableOrigins.add(item["産地"]);
     }
   });
-  Array.from(origins).sort().forEach(origin => {
-    const option = document.createElement('option');
-    option.value = origin;
-    option.textContent = origin;
-    originSelect.appendChild(option);
-  });
+
+  // 地方ごとにループしてoptgroupを作成
+  for (const [regionName, prefectures] of Object.entries(REGIONS)) {
+    // この地方に含まれる産地がデータにあるかチェック
+    const originsInRegion = prefectures.filter(pref => availableOrigins.has(pref));
+
+    // その他（マッピング外）の産地用
+    prefectures.forEach(p => availableOrigins.delete(p)); // 処理済みとして削除
+
+    if (originsInRegion.length > 0) {
+      const group = document.createElement('optgroup');
+      group.label = regionName;
+
+      // 地方全域を選択するためのオプション (例: "region:東北")
+      if (originsInRegion.length > 1) { // 1つしかなければ不要かもだが、一応統一感のため、あるいは複数ある場合のみ
+        const regionOption = document.createElement('option');
+        regionOption.value = `region:${regionName}`;
+        regionOption.textContent = `${regionName}全域`;
+        regionOption.style.fontWeight = "bold";
+        group.appendChild(regionOption);
+      }
+
+      originsInRegion.forEach(origin => {
+        const option = document.createElement('option');
+        option.value = origin;
+        option.textContent = origin;
+        group.appendChild(option);
+      });
+
+      originSelect.appendChild(group);
+    }
+  }
+
+  // マッピングに含まれなかった残り（海外や不明など）
+  if (availableOrigins.size > 0) {
+    const otherGroup = document.createElement('optgroup');
+    otherGroup.label = "その他";
+    Array.from(availableOrigins).sort().forEach(origin => {
+      const option = document.createElement('option');
+      option.value = origin;
+      option.textContent = origin;
+      otherGroup.appendChild(option);
+    });
+    originSelect.appendChild(otherGroup);
+  }
 }
 
 function renderCards(items) {
@@ -112,32 +170,64 @@ function toggleCardSelection(e, card) {
 }
 
 function filterData() {
-  const keyword = document.getElementById("search-keyword").value.toLowerCase();
+  const janInfo = document.getElementById("search-jan").value.trim().replace(/-/g, ''); // ハイフン除去など
+  const nameKw = document.getElementById("search-name").value.trim().toLowerCase();
+  const breweryKw = document.getElementById("search-brewery").value.trim().toLowerCase();
+
   const selectedOrigin = document.getElementById("search-origin").value;
   const minPriceStr = document.getElementById("search-price-min").value;
   const maxPriceStr = document.getElementById("search-price-max").value;
   const minPrice = minPriceStr ? Number(minPriceStr) : null;
   const maxPrice = maxPriceStr ? Number(maxPriceStr) : null;
+
   const filtered = data.filter(item => {
     // 1. 定番除外チェック & 非表示チェック(管理画面連携)
     if (!item["商品名"] || item["商品名"].includes("定番商品はございません")) return false;
     if (item.isHidden === true) return false;
 
-    const nameMatch = item["商品名"]?.toLowerCase().includes(keyword);
-    const breweryMatch = item["蔵元"]?.toLowerCase().includes(keyword);
-    const janFields = ["1800mL　JAN", "720mL500mLJAN", "360mL300mL180mL　JAN"];
-    const janMatch = janFields.some(field => {
-      const val = item[field];
-      return val && String(val).replace(/\s+/g, '').includes(keyword);
-    });
-    if (!(nameMatch || breweryMatch || janMatch)) return false;
-    if (selectedOrigin && item["産地"] !== selectedOrigin) return false;
+    // --- 検索ロジック (AND条件) ---
+
+    // ① JANコード検索
+    if (janInfo) {
+      const janFields = ["1800mL　JAN", "720mL500mLJAN", "360mL300mL180mL　JAN"];
+      const janMatch = janFields.some(field => {
+        const val = item[field];
+        return val && String(val).replace(/\s+/g, '').includes(janInfo);
+      });
+      if (!janMatch) return false;
+    }
+
+    // ② 商品名検索
+    if (nameKw) {
+      if (!item["商品名"]?.toLowerCase().includes(nameKw)) return false;
+    }
+
+    // ③ 蔵元名検索
+    if (breweryKw) {
+      if (!item["蔵元"]?.toLowerCase().includes(breweryKw)) return false;
+    }
+
+    // ④ 産地フィルタ
+    if (selectedOrigin) {
+      if (selectedOrigin.startsWith('region:')) {
+        // 地方検索: region:東北 など
+        const regionName = selectedOrigin.split(':')[1];
+        const targetPrefectures = REGIONS[regionName];
+        if (!targetPrefectures || !targetPrefectures.includes(item["産地"])) {
+          return false;
+        }
+      } else {
+        // 通常の県名検索
+        if (item["産地"] !== selectedOrigin) return false;
+      }
+    }
+
     // 価格フィルタ
     const price1800 = Number(item["1800mL価格税抜"]) || 0;
     const price720 = Number(item["720mL500mL価格税抜"]) || 0;
 
     const isPriceInRange = (price) => {
-      if (price <= 0) return false; // 価格未設定は対象外（表示しない）あるいは対象にする？元ロジックは >0 なのでfalse
+      if (price <= 0) return false;
       if (minPrice !== null && price < minPrice) return false;
       if (maxPrice !== null && price > maxPrice) return false;
       return true;
@@ -147,12 +237,15 @@ function filterData() {
     const valid720 = isPriceInRange(price720);
 
     if (!valid1800 && !valid720) return false;
+
     return true;
   });
   renderCards(filtered);
 }
 
-document.getElementById("search-keyword").addEventListener("input", filterData);
+document.getElementById("search-jan").addEventListener("input", filterData);
+document.getElementById("search-name").addEventListener("input", filterData);
+document.getElementById("search-brewery").addEventListener("input", filterData);
 document.getElementById("search-origin").addEventListener("change", filterData);
 document.getElementById("search-price-min").addEventListener("input", filterData);
 document.getElementById("search-price-max").addEventListener("input", filterData);

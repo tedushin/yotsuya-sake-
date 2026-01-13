@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>（株）よつや外商部</title>
+  <title>（株）よつや外商部 日本酒検索アプリ</title>
 
   <!-- ライブラリの読み込み -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -15,30 +15,61 @@
 </head>
 
 <body>
-  <header>（株）よつや外商部</header>
-  <div class="search-panel-container">
-    <div class="search-panel">
-      <div class="search-group">
-        <label for="search-keyword">キーワード / JANコード</label>
-        <input type="text" id="search-keyword" placeholder="商品名、蔵元、JANコード...">
+  <header class="app-header">
+    <div class="header-content">
+      <h1>（株）よつや外商部<br><span class="subtitle">日本酒検索アプリ</span></h1>
+    </div>
+  </header>
+
+  <div class="search-section">
+    <div class="search-grid">
+      <!-- ① 地方別に検索 -->
+      <div class="search-card">
+        <div class="search-icon">📍</div>
+        <label for="search-origin">地方別に検索</label>
+        <div class="input-wrapper">
+          <select id="search-origin">
+            <option value="">全ての産地</option>
+            <!-- JavaScriptで自動生成 -->
+          </select>
+        </div>
       </div>
 
-      <div class="search-group">
-        <label for="search-origin">産地</label>
-        <select id="search-origin">
-          <option value="">全ての産地</option>
-          <!-- JavaScriptで自動生成 -->
-        </select>
+      <!-- ② JANコードで検索 -->
+      <div class="search-card">
+        <div class="search-icon">🏷️</div>
+        <label for="search-jan">JANコードで検索</label>
+        <div class="input-wrapper">
+          <input type="text" id="search-jan" placeholder="例: 49..." inputmode="numeric">
+        </div>
       </div>
 
+      <!-- ③ 商品名で検索 -->
+      <div class="search-card">
+        <div class="search-icon">🍶</div>
+        <label for="search-name">商品名で検索</label>
+        <div class="input-wrapper">
+          <input type="text" id="search-name" placeholder="例: 純米大吟醸...">
+        </div>
+      </div>
+
+      <!-- ④ 蔵元名で検索 -->
+      <div class="search-card">
+        <div class="search-icon">🏭</div>
+        <label for="search-brewery">蔵元名で検索</label>
+        <div class="input-wrapper">
+          <input type="text" id="search-brewery" placeholder="例: よつや酒造...">
+        </div>
+      </div>
+    </div>
+
+    <div class="search-advanced">
       <div class="search-group price-group">
         <label>価格帯 (税抜)</label>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <input type="number" id="search-price-min" placeholder="下限" min="0" step="100"
-            style="padding: 0.5rem; width: 100px; border: 1px solid #ddd; border-radius: 4px;">
+        <div class="price-inputs">
+          <input type="number" id="search-price-min" placeholder="下限" min="0" step="100">
           <span>〜</span>
-          <input type="number" id="search-price-max" placeholder="上限" min="0" step="100"
-            style="padding: 0.5rem; width: 100px; border: 1px solid #ddd; border-radius: 4px;">
+          <input type="number" id="search-price-max" placeholder="上限" min="0" step="100">
         </div>
       </div>
     </div>
@@ -84,6 +115,7 @@
   <div id="estimate-capture"></div>
 
   <!-- JavaScriptのリンク -->
+  <script src="js/data.js"></script>
   <script src="js/main.js?v=2"></script>
 </body>
 
