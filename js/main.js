@@ -351,6 +351,7 @@ function renderPreviewPages() {
             <div style="text-align: right;">
                 <div>発行日: ${dateStr}</div>
                 ${currentPreviewTitle === "御見積書" ? `<div>対象期間: 発行より1ヶ月間有効</div>` : ''}
+                <div style="font-size: 0.8em; margin-top: 2px;">＊価格は全て税別です。</div>
             </div>
           </div>
           <div class="estimate-grid">
