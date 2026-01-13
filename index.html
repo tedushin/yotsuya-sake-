@@ -23,14 +23,16 @@
 
   <div class="search-section">
     <div class="search-grid">
-      <!-- ① 地方別に検索 -->
+      <!-- ① 産地で検索 -->
       <div class="search-card">
         <div class="search-icon">📍</div>
-        <label for="search-origin">地方別に検索</label>
-        <div class="input-wrapper">
-          <select id="search-origin">
-            <option value="">全ての産地</option>
-            <!-- JavaScriptで自動生成 -->
+        <label>産地で検索</label>
+        <div class="input-wrapper" style="display: flex; gap: 5px;">
+          <select id="search-region" style="flex: 1;">
+            <option value="">地方を選択</option>
+          </select>
+          <select id="search-prefecture" style="flex: 1;">
+            <option value="">県名を選択</option>
           </select>
         </div>
       </div>

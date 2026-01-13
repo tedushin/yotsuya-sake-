@@ -48,7 +48,7 @@ function loadData() {
       throw new Error('データが読み込めませんでした。(js/data.js check)');
     }
     data = sakeData; // グローバル変数から取得
-    populateOrigins(data);
+    populateSearchMenus(data);
     filterData();
   } catch (error) {
     console.error(error);
@@ -58,62 +58,73 @@ function loadData() {
 
 // 地方と都道府県のマッピング定義
 
-function populateOrigins(items) {
-  const originSelect = document.getElementById('search-origin');
-  originSelect.innerHTML = '<option value="">全ての産地</option>'; // リセット
+function populateSearchMenus(items) {
+  const regionSelect = document.getElementById('search-region');
+  // 既存の地域オプションをクリア（デフォルトの「地方を選択」は残してもいいが、再生成が楽）
+  regionSelect.innerHTML = '<option value="">地方: 全て</option>';
 
-  // データに含まれる産地を抽出
-  const availableOrigins = new Set();
+  const availablePrefs = new Set();
   items.forEach(item => {
-    if (item["産地"]) {
-      availableOrigins.add(item["産地"]);
-    }
+    if (item["産地"]) availablePrefs.add(item["産地"]);
   });
 
-  // 地方ごとにループしてoptgroupを作成
+  const usedPrefs = new Set();
+
   for (const [regionName, prefectures] of Object.entries(REGIONS)) {
-    // この地方に含まれる産地がデータにあるかチェック
-    const originsInRegion = prefectures.filter(pref => availableOrigins.has(pref));
-
-    // その他（マッピング外）の産地用
-    prefectures.forEach(p => availableOrigins.delete(p)); // 処理済みとして削除
-
-    if (originsInRegion.length > 0) {
-      const group = document.createElement('optgroup');
-      group.label = regionName;
-
-      // 地方全域を選択するためのオプション (例: "region:東北")
-      if (originsInRegion.length > 1) { // 1つしかなければ不要かもだが、一応統一感のため、あるいは複数ある場合のみ
-        const regionOption = document.createElement('option');
-        regionOption.value = `region:${regionName}`;
-        regionOption.textContent = `${regionName}全域`;
-        regionOption.style.fontWeight = "bold";
-        group.appendChild(regionOption);
-      }
-
-      originsInRegion.forEach(origin => {
-        const option = document.createElement('option');
-        option.value = origin;
-        option.textContent = origin;
-        group.appendChild(option);
-      });
-
-      originSelect.appendChild(group);
+    // この地方に含まれる産地があるか
+    const hasPref = prefectures.some(p => availablePrefs.has(p));
+    if (hasPref) {
+      const option = document.createElement('option');
+      option.value = regionName;
+      option.textContent = regionName;
+      regionSelect.appendChild(option);
+      prefectures.forEach(p => usedPrefs.add(p));
     }
   }
 
-  // マッピングに含まれなかった残り（海外や不明など）
-  if (availableOrigins.size > 0) {
-    const otherGroup = document.createElement('optgroup');
-    otherGroup.label = "その他";
-    Array.from(availableOrigins).sort().forEach(origin => {
-      const option = document.createElement('option');
-      option.value = origin;
-      option.textContent = origin;
-      otherGroup.appendChild(option);
-    });
-    originSelect.appendChild(otherGroup);
+  // その他
+  let hasOthers = false;
+  availablePrefs.forEach(p => {
+    if (!usedPrefs.has(p)) hasOthers = true;
+  });
+  if (hasOthers) {
+    const option = document.createElement('option');
+    option.value = "その他";
+    option.textContent = "その他";
+    regionSelect.appendChild(option);
   }
+
+  // 初期状態で県名リストも更新（全県表示）
+  updatePrefectureOptions("");
+}
+
+function updatePrefectureOptions(regionName) {
+  const prefSelect = document.getElementById('search-prefecture');
+  prefSelect.innerHTML = '<option value="">県名: 全て</option>';
+
+  const availablePrefs = new Set();
+  data.forEach(item => {
+    if (item["産地"]) availablePrefs.add(item["産地"]);
+  });
+
+  let targetPrefs = [];
+
+  if (regionName === "その他") {
+    const allMapped = new Set(Object.values(REGIONS).flat());
+    targetPrefs = Array.from(availablePrefs).filter(p => !allMapped.has(p));
+  } else if (regionName && REGIONS[regionName]) {
+    targetPrefs = REGIONS[regionName].filter(p => availablePrefs.has(p));
+  } else {
+    // 全て
+    targetPrefs = Array.from(availablePrefs).sort(); // 文字コード順
+  }
+
+  targetPrefs.forEach(p => {
+    const option = document.createElement('option');
+    option.value = p;
+    option.textContent = p;
+    prefSelect.appendChild(option);
+  });
 }
 
 function renderCards(items) {
@@ -174,7 +185,8 @@ function filterData() {
   const nameKw = document.getElementById("search-name").value.trim().toLowerCase();
   const breweryKw = document.getElementById("search-brewery").value.trim().toLowerCase();
 
-  const selectedOrigin = document.getElementById("search-origin").value;
+  const selectedRegion = document.getElementById("search-region").value;
+  const selectedPref = document.getElementById("search-prefecture").value;
   const minPriceStr = document.getElementById("search-price-min").value;
   const maxPriceStr = document.getElementById("search-price-max").value;
   const minPrice = minPriceStr ? Number(minPriceStr) : null;
@@ -208,18 +220,23 @@ function filterData() {
     }
 
     // ④ 産地フィルタ
-    if (selectedOrigin) {
-      if (selectedOrigin.startsWith('region:')) {
-        // 地方検索: region:東北 など
-        const regionName = selectedOrigin.split(':')[1];
-        const targetPrefectures = REGIONS[regionName];
+    // ④ 産地フィルタ
+    // 地方フィルタ
+    if (selectedRegion) {
+      if (selectedRegion === "その他") {
+        const allMapped = new Set(Object.values(REGIONS).flat());
+        if (allMapped.has(item["産地"])) return false;
+      } else {
+        const targetPrefectures = REGIONS[selectedRegion];
         if (!targetPrefectures || !targetPrefectures.includes(item["産地"])) {
           return false;
         }
-      } else {
-        // 通常の県名検索
-        if (item["産地"] !== selectedOrigin) return false;
       }
+    }
+
+    // 県名フィルタ
+    if (selectedPref) {
+      if (item["産地"] !== selectedPref) return false;
     }
 
     // 価格フィルタ
@@ -246,7 +263,14 @@ function filterData() {
 document.getElementById("search-jan").addEventListener("input", filterData);
 document.getElementById("search-name").addEventListener("input", filterData);
 document.getElementById("search-brewery").addEventListener("input", filterData);
-document.getElementById("search-origin").addEventListener("change", filterData);
+
+// 産地検索イベント
+document.getElementById("search-region").addEventListener("change", function (e) {
+  updatePrefectureOptions(e.target.value);
+  filterData();
+});
+document.getElementById("search-prefecture").addEventListener("change", filterData);
+
 document.getElementById("search-price-min").addEventListener("input", filterData);
 document.getElementById("search-price-max").addEventListener("input", filterData);
 
