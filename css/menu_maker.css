@@ -1,0 +1,763 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --primary-color: #d4af37;
+    /* Gold */
+    --bg-dark: #121212;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-light: #f5f5f5;
+    --text-muted: #a0a0a0;
+
+    --price-size: 38px;
+    /* Dynamic Price Size */
+    --item-font: 'Noto Serif JP', serif;
+    /* Item Font Family */
+
+    --preview-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --a4-width-mm: 210mm;
+    --a4-height-mm: 297mm;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+/* --- Sidebar (Controls) --- */
+#sidebar {
+    width: 350px;
+    height: 100vh;
+    background: #1e1e1e;
+    backdrop-filter: blur(10px);
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    z-index: 100;
+    overflow-y: auto;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    text-align: center;
+    letter-spacing: 0.1em;
+}
+
+.control-group {
+    margin-bottom: 25px;
+}
+
+.control-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="search"] {
+    width: 100%;
+    padding: 12px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus {
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Orientation Toggle */
+.toggle-container {
+    display: flex;
+    background: var(--glass-bg);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.toggle-btn {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    transition: all 0.3s;
+}
+
+.toggle-btn.active {
+    background: var(--primary-color);
+    color: #000;
+    font-weight: 600;
+}
+
+/* Item Search Results */
+#search-results {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 10px;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    max-height: 400px;
+}
+
+.search-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--glass-border);
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.search-item.selected {
+    background: rgba(212, 175, 55, 0.2);
+    border-left: 3px solid var(--primary-color);
+}
+
+.item-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.item-brewery {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Count Badge */
+#item-count-badge {
+    background: var(--primary-color);
+    color: #000;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Print Button */
+.print-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #d4af37, #b4932a);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-size: 1rem;
+}
+
+.print-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+}
+
+/* Title Formatting Controls */
+.style-controls {
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--glass-border);
+}
+
+.style-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 10px;
+}
+
+.style-row:last-child {
+    margin-bottom: 0;
+}
+
+.style-btn {
+    flex: 1;
+    padding: 6px 0;
+    background: #333;
+    border: 1px solid #555;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.style-btn:hover {
+    background: #444;
+}
+
+.style-btn.active {
+    background: var(--primary-color);
+    color: #000;
+    border-color: var(--primary-color);
+}
+
+/* Inputs */
+input[type="number"] {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: white;
+    border-radius: 4px;
+}
+
+input[type="color"] {
+    border: none;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    background: none;
+}
+
+/* --- Main Preview Area --- */
+#main-area {
+    flex: 1;
+    background: #0f0f0f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    /* Remove padding to maximize space, handled by JS calculation */
+    overflow: hidden;
+    /* Hide scrollbars, JS scaling fits content */
+    background-image: radial-gradient(circle at 10% 20%, rgba(30, 30, 30, 1) 0%, rgba(10, 10, 10, 1) 90%);
+    position: relative;
+}
+
+#preview-container {
+    background: white;
+    box-shadow: var(--preview-shadow);
+    /* Transform handled by JS */
+    /* width/height classes handled by JS */
+    overflow: hidden;
+    position: absolute;
+    /* Absolute centering combined with Flex centering in parent works well for transforms */
+}
+
+/* A4 Dimensions */
+.a4-portrait {
+    width: var(--a4-width-mm);
+    height: var(--a4-height-mm);
+}
+
+.a4-landscape {
+    width: var(--a4-height-mm);
+    /* Swapped */
+    height: var(--a4-width-mm);
+    /* Swapped */
+}
+
+/* Menu Content Styles */
+/* Menu Content Styles */
+.menu-content {
+    width: 100%;
+    height: 100%;
+    color: black;
+    font-family: var(--item-font);
+    /* Use variable */
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    /* Standard print margin */
+    position: relative;
+    overflow: hidden;
+    /* Strict containment */
+    /* Base background is white/pattern */
+    background-color: white;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmZmZmIi8+CjxwYXRoIGQ9Ik0xIDNoMnYxSDF6IiBmaWxsPSIjZjhmOGY4Ii8+Cjwvc3ZnPg==');
+}
+
+/* Background Layer */
+#menu-bg-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.5;
+    /* 50% transparency */
+    pointer-events: none;
+}
+
+.menu-header {
+    margin-bottom: 20px;
+    text-align: center;
+    flex-shrink: 0;
+    /* Prevent header from shrinking */
+    position: relative;
+    z-index: 1;
+    /* Ensure ABOVE background */
+}
+
+.menu-title-input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 3rem;
+    font-weight: 700;
+    text-align: center;
+    background: transparent;
+    font-family: 'Noto Serif JP', serif;
+    color: #333;
+    outline: none;
+    transition: border-color 0.3s;
+    line-height: 1.2;
+}
+
+.menu-title-input:hover,
+.menu-title-input:focus {
+    border-bottom-color: #ddd;
+}
+
+.menu-grid {
+    flex: 1;
+    /* Take remaining space */
+    height: 100%;
+    /* Fill flex parent */
+    min-height: 0;
+    /* Critical for grid inside flex to respect container height */
+    display: grid;
+    gap: 15px;
+    overflow: hidden;
+    /* Ensure nothing sticks out */
+    /* Grid layout defined by JS classes/inline styles */
+    position: relative;
+    z-index: 1;
+    /* Ensure ABOVE background */
+}
+
+/* --- Card Internal Layout --- */
+.menu-item-card {
+    border: none;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    background: rgba(255, 255, 255, 0.6);
+    /* 60% Opacity */
+    /* Soft shadow to define the white object against the background */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    /* Clip content strictly */
+    min-width: 0;
+    /* Allow shrinking below min-content */
+    min-height: 0;
+    /* Allow shrinking below min-content */
+}
+
+/* Metadata Header (Region left, Brewery right) */
+.menu-item-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    /* Space between header and name */
+    font-size: 0.85rem;
+    color: #666;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+.item-region {
+    font-weight: bold;
+    color: #333;
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 2px;
+}
+
+.item-brewery {
+    font-family: var(--item-font);
+    /* Use variable */
+}
+
+/* Main Name Area */
+.menu-item-main-content {
+    margin-bottom: 10px;
+}
+
+.menu-item-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #000;
+    line-height: 1.2;
+    white-space: nowrap;
+    /* Force single line */
+    overflow: hidden;
+    /* Hide overflow */
+    text-overflow: ellipsis;
+    /* Add ... */
+}
+
+/* ... existing grade ... */
+.menu-item-grade {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: #888;
+    border: 1px solid #ccc;
+    padding: 1px 5px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-left: 8px;
+    font-weight: normal;
+    transform: translateY(-2px);
+}
+
+/* ... existing catch/desc ... */
+
+/* Price Area */
+.menu-item-price-area {
+    margin-top: auto;
+    /* Push to bottom */
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    padding-top: 10px;
+    width: 100%;
+}
+
+.menu-item-price-input {
+    border: none;
+    background: transparent;
+    text-align: right;
+    font-family: var(--item-font);
+    /* Use variable */
+    font-size: var(--price-size) !important;
+    /* Dynamic with override */
+    font-weight: bold;
+    color: #000 !important;
+    /* Force black */
+    width: 50%;
+    outline: none;
+    border-bottom: 1px dotted #ccc;
+    padding-right: 5px;
+    line-height: 1.1;
+}
+
+.menu-item-price-input::placeholder {
+    color: #ddd;
+    opacity: 1;
+}
+
+.menu-item-price-input:focus {
+    border-bottom: 1px solid #000;
+}
+
+.menu-item-price-unit {
+    font-size: 1.4rem;
+    margin-left: 5px;
+    font-weight: bold;
+    color: #000 !important;
+}
+
+/* Responsive Logo Slot (keep existing) */
+.logo-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed #ddd;
+    background: #fafafa;
+    color: #ccc;
+    font-size: 1.2rem;
+    opacity: 0.5;
+}
+
+.logo-slot::after {
+    content: "Shop Logo / Branding";
+}
+
+/* --- Responsive Grid Layouts (handled mostly by inline styles/JS, but helper classes here) --- */
+
+/* Print Styles */
+@media print {
+    @page {
+        margin: 0;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: white;
+        height: auto;
+        width: auto;
+        overflow: visible;
+        display: block !important;
+        /* Override flex */
+    }
+
+    /* Hide UI */
+    #sidebar,
+    .print-btn,
+    #main-area {
+        display: none !important;
+        /* Note: we hide #main-area because we will position #preview-container escape out of it fixed */
+    }
+
+    /* However, if we display:none #main-area, #preview-container (child) is gone. */
+    /* So we must make #main-area visible but phantom? No. */
+    /* Better: Visibility hidden on parents, visible on child. */
+
+    body * {
+        visibility: hidden;
+    }
+
+    /* Target the container specifically */
+    #preview-container {
+        visibility: visible !important;
+        position: fixed;
+        left: 0 !important;
+        top: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        /* Use default dimensions from the class (210mm etc) */
+        /* Centering resets */
+        right: auto !important;
+        bottom: auto !important;
+        height: auto !important;
+        /* Let content dictact height or class */
+        z-index: 9999;
+    }
+
+    #preview-container * {
+        visibility: visible !important;
+    }
+
+    /* Ensure background colors print */
+    * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* --- Density / Scaling Logic --- */
+
+/* 2 Items (Huge) */
+.menu-grid.count-2 .menu-item-card {
+    padding: 30px;
+    gap: 15px;
+}
+
+.menu-grid.count-2 .menu-item-header-row {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+}
+
+.menu-grid.count-2 .menu-item-name {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    line-height: 1.1;
+}
+
+.menu-grid.count-2 .menu-item-grade {
+    font-size: 1.2rem;
+    padding: 4px 12px;
+}
+
+.menu-grid.count-2 .menu-item-desc {
+    font-size: 1.3rem;
+    -webkit-line-clamp: 12;
+    line-height: 1.5;
+}
+
+.menu-grid.count-2 .menu-item-catch {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+}
+
+/* 3-4 Items (Large) */
+.menu-grid.count-3 .menu-item-card,
+.menu-grid.count-4 .menu-item-card {
+    padding: 25px;
+    gap: 10px;
+}
+
+.menu-grid.count-3 .menu-item-header-row,
+.menu-grid.count-4 .menu-item-header-row {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.menu-grid.count-3 .menu-item-name,
+.menu-grid.count-4 .menu-item-name {
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+}
+
+.menu-grid.count-3 .menu-item-grade,
+.menu-grid.count-4 .menu-item-grade {
+    font-size: 1rem;
+}
+
+.menu-grid.count-3 .menu-item-desc,
+.menu-grid.count-4 .menu-item-desc {
+    font-size: 1.1rem;
+    -webkit-line-clamp: 9;
+    line-height: 1.4;
+}
+
+.menu-grid.count-3 .menu-item-catch,
+.menu-grid.count-4 .menu-item-catch {
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+}
+
+/* 5-6 Items (Medium) */
+.menu-grid.count-5 .menu-item-card,
+.menu-grid.count-6 .menu-item-card {
+    padding: 20px;
+    gap: 8px;
+}
+
+.menu-grid.count-5 .menu-item-header-row,
+.menu-grid.count-6 .menu-item-header-row {
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.menu-grid.count-5 .menu-item-name,
+.menu-grid.count-6 .menu-item-name {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+}
+
+.menu-grid.count-5 .menu-item-grade,
+.menu-grid.count-6 .menu-item-grade {
+    font-size: 0.9rem;
+}
+
+.menu-grid.count-5 .menu-item-desc,
+.menu-grid.count-6 .menu-item-desc {
+    font-size: 1rem;
+    -webkit-line-clamp: 7;
+    line-height: 1.4;
+}
+
+.menu-grid.count-5 .menu-item-catch,
+.menu-grid.count-6 .menu-item-catch {
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+/* 7-8 Items (Compact) */
+.menu-grid.count-7 .menu-item-card,
+.menu-grid.count-8 .menu-item-card {
+    padding: 15px;
+    gap: 5px;
+}
+
+.menu-grid.count-7 .menu-item-header-row,
+.menu-grid.count-8 .menu-item-header-row {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    padding-bottom: 4px;
+}
+
+.menu-grid.count-7 .menu-item-name,
+.menu-grid.count-8 .menu-item-name {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.menu-grid.count-7 .menu-item-grade,
+.menu-grid.count-8 .menu-item-grade {
+    font-size: 0.8rem;
+    padding: 1px 4px;
+}
+
+.menu-grid.count-7 .menu-item-desc,
+.menu-grid.count-8 .menu-item-desc {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 6;
+    line-height: 1.35;
+}
+
+.menu-grid.count-7 .menu-item-catch,
+.menu-grid.count-8 .menu-item-catch {
+    font-size: 1rem;
+    margin-bottom: 2px;
+}
+
+/* 9-10 Items (Dense) */
+.menu-grid.count-9 .menu-item-card,
+.menu-grid.count-10 .menu-item-card {
+    padding: 12px;
+    gap: 4px;
+}
+
+.menu-grid.count-9 .menu-item-header-row,
+.menu-grid.count-10 .menu-item-header-row {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+}
+
+.menu-grid.count-9 .menu-item-name,
+.menu-grid.count-10 .menu-item-name {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+}
+
+.menu-grid.count-9 .menu-item-grade,
+.menu-grid.count-10 .menu-item-grade {
+    font-size: 0.75rem;
+    padding: 0 3px;
+    border-width: 0.5px;
+}
+
+.menu-grid.count-9 .menu-item-desc,
+.menu-grid.count-10 .menu-item-desc {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 5;
+    line-height: 1.3;
+}
+
+.menu-grid.count-9 .menu-item-catch,
+.menu-grid.count-10 .menu-item-catch {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}

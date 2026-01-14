@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Menu Maker</title>
+    <link rel="stylesheet" href="css/menu_maker.css">
+</head>
+
+<body>
+
+    <!-- Sidebar Controls -->
+    <div id="sidebar">
+        <div class="logo">酒メニューメーカー</div>
+
+        <div class="control-group">
+            <label class="control-label">メニュータイトル</label>
+            <input type="text" id="sidebar-title-input" placeholder="タイトルを入力" value="おすすめ日本酒">
+
+            <!-- Title Style Controls -->
+            <div class="style-controls">
+                <div class="style-row">
+                    <label>サイズ: <input type="number" id="title-size-input" value="48" min="12" max="100"
+                            style="width: 50px; padding: 5px;"> px</label>
+                    <input type="color" id="title-color-input" value="#333333" title="文字色">
+                </div>
+                <div class="style-row">
+                    <button class="style-btn" id="btn-bold" title="太字"><b>B</b></button>
+                    <button class="style-btn" id="btn-italic" title="斜体"><i>I</i></button>
+                    <button class="style-btn" id="btn-underline" title="下線"><u>U</u></button>
+                </div>
+                <div class="style-row">
+                    <select id="title-font-select" style="width: 100%; padding: 5px; margin-top: 5px;">
+                        <option value="'Noto Serif JP', serif">明朝体 (Serif)</option>
+                        <option value="'Poppins', sans-serif">ゴシック体 (Sans)</option>
+                        <option value="'Brush Script MT', cursive">筆記体風 (Cursive)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">商品情報のフォント (Font)</label>
+            <select id="item-font-select"
+                style="width: 100%; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
+                <option value="'Noto Serif JP', serif">明朝体 (Serif) - Default</option>
+                <option value="'Poppins', sans-serif">ゴシック体 (Sans)</option>
+                <option value="'Brush Script MT', cursive">筆記体風 (Cursive)</option>
+                <option value="'Courier New', monospace">タイプライター風 (Mono)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">価格の文字サイズ: <span id="price-size-display">50px</span></label>
+            <div class="style-controls">
+                <div class="style-row">
+                    <input type="range" id="price-size-input" value="50" min="10" max="150" step="1"
+                        style="width: 100%;">
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">用紙の向き</label>
+            <div class="toggle-container">
+                <div class="toggle-btn" data-mode="portrait" id="radio-portrait">縦 (Portrait)</div>
+                <div class="toggle-btn active" data-mode="landscape" id="radio-landscape">横 (Landscape)</div>
+            </div>
+        </div>
+
+        <div class="control-group" style="flex:1; display:flex; flex-direction:column;">
+            <label class="control-label">アイテム選択 (<span id="selection-count">0</span>/10)</label>
+            <input type="search" id="search-input" placeholder="日本酒を検索...">
+
+            <div id="search-results">
+                <!-- Javascript will populate this -->
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">背景画像 (Background)</label>
+            <input type="file" id="bg-image-input" accept="image/*" style="color: white;">
+        </div>
+
+        <button class="print-btn" id="print-btn">印刷 / PDF保存</button>
+    </div>
+
+    <!-- Main Preview Area -->
+    <div id="main-area">
+        <div id="preview-container" class="a4-portrait">
+            <div class="menu-content">
+                <div id="menu-bg-layer"></div>
+                <div class="menu-header">
+                    <input type="text" class="menu-title-input" id="menu-title-input" value="おすすめ日本酒">
+                </div>
+
+                <div id="menu-grid" class="menu-grid">
+                    <!-- Javascript will populate cards here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/menu_maker.js"></script>
+</body>
+
+</html>
