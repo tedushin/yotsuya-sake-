@@ -1,4 +1,14 @@
 let data = [];
+let selectedIndices = new Set();
+
+function toggleIndex(index, isChecked) {
+  const idx = Number(index);
+  if (isChecked) {
+    selectedIndices.add(idx);
+  } else {
+    selectedIndices.delete(idx);
+  }
+}
 
 // 地方と都道府県のマッピング定義
 const REGIONS = {
@@ -34,12 +44,17 @@ window.handleImageError = function (img, jan) {
 
 function checkAll() {
   const checkboxes = document.querySelectorAll('.card-container .card input[type="checkbox"]');
-  checkboxes.forEach(cb => cb.checked = true);
+  checkboxes.forEach(cb => {
+    cb.checked = true;
+    toggleIndex(cb.dataset.index, true);
+  });
 }
 
 function uncheckAll() {
   const checkboxes = document.querySelectorAll('.card-container .card input[type="checkbox"]');
   checkboxes.forEach(cb => cb.checked = false);
+  // 全解除なのでSetもクリア
+  selectedIndices.clear();
 }
 
 function loadData() {
@@ -154,8 +169,9 @@ function renderCards(items) {
     card.className = "card";
     // カード全体をクリック可能にする
     card.onclick = function (e) { toggleCardSelection(e, this); };
+    const isChecked = selectedIndices.has(originalIndex);
     card.innerHTML = `
-      <input type="checkbox" data-index="${originalIndex}" onclick="event.stopPropagation()"/>
+      <input type="checkbox" data-index="${originalIndex}" onclick="event.stopPropagation(); toggleIndex(this.dataset.index, this.checked)" ${isChecked ? 'checked' : ''}/>
       <div class="card-image-wrapper">
         <img src="${imageSrc}" alt="${item["商品名"]}" class="card-image" onerror="handleImageError(this, '${jan}')">
       </div>
@@ -177,6 +193,7 @@ function toggleCardSelection(e, card) {
   const checkbox = card.querySelector('input[type="checkbox"]');
   if (checkbox) {
     checkbox.checked = !checkbox.checked;
+    toggleIndex(checkbox.dataset.index, checkbox.checked);
   }
 }
 
@@ -472,12 +489,14 @@ async function downloadPDF() {
 
 // ボタンアクションの変更
 async function generatePDF() {
-  const checkedBoxes = document.querySelectorAll(".card input:checked");
-  if (checkedBoxes.length === 0) {
+  if (selectedIndices.size === 0) {
     alert("商品を選択してください。");
     return;
   }
-  const selectedItems = Array.from(checkedBoxes).map(cb => data[cb.dataset.index]);
+  // インデックス順にソートしてアイテムを取得
+  const sortedIndices = Array.from(selectedIndices).sort((a, b) => a - b);
+  const selectedItems = sortedIndices.map(idx => data[idx]);
+
   // プレビューを開く
   openPreview(selectedItems, "御見積書");
 }
