@@ -99,6 +99,60 @@
         }
 
         /* モーダルフォーム */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header,
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-footer {
+            border-bottom: none;
+            border-top: 1px solid #eee;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -156,18 +210,70 @@
         #toast.show {
             opacity: 1;
         }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
 <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-text">Loading...</div>
+    </div>
+
     <div class="admin-container">
         <div class="admin-header">
             <h1>商品マスター管理</h1>
             <div>
+                <button class="btn btn-secondary" onclick="openSettings()" style="margin-right:1rem;">⚙
+                    GitHub設定</button>
                 <a href="index.html" class="btn btn-secondary"
                     style="text-decoration:none; margin-right:1rem;">アプリへ戻る</a>
                 <button class="btn btn-primary" onclick="openModal()">＋ 新規商品登録</button>
             </div>
+        </div>
+
+        <div id="gh-status-bar"
+            style="background:#e8f5e9; color:#2e7d32; padding:10px; margin-bottom:20px; border-radius:4px; display:none;">
+            GitHub連携中: <span id="gh-status-text"></span>
         </div>
 
         <div class="data-table-wrapper">
@@ -238,14 +344,14 @@
                             style="background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px solid #eee;">
                             <label>商品の画像登録</label>
                             <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                                <button type="button" class="btn btn-secondary" onclick="searchImage()">画像検索
-                                    (Google)</button>
-                                <span
-                                    style="font-size: 0.8rem; color: #666; display: flex; align-items: center;">画像URLをコピーして貼り付けてください</span>
+                                <button type="button" class="btn btn-secondary"
+                                    onclick="searchImage()">画像検索(Google)</button>
                             </div>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="input-image-url" placeholder="画像のURLをここに貼り付け">
-                                <button type="button" class="btn btn-primary" onclick="uploadImageFromUrl()">保存</button>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <input type="file" id="input-image-file" accept="image/*">
+                                <button type="button" class="btn btn-primary"
+                                    onclick="uploadImageFile()">画像をアップロード</button>
+                                <span style="font-size: 0.8rem; color: #666;">※保存前にJANコードを入力してください（ファイル名に使用されます）</span>
                             </div>
                         </div>
                         <div class="form-group form-full">
@@ -268,36 +374,150 @@
         </div>
     </div>
 
+    <!-- GitHub設定モーダル -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>GitHub連携設定</h2>
+                <button class="btn btn-secondary" onclick="closeSettings()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.9rem; color:#666; margin-bottom:1rem;">
+                    GitHub Pagesで運用するため、API経由でデータを保存します。<br>
+                    Personal Access Token (Repo scope)が必要です。
+                </p>
+                <div class="form-group">
+                    <label>GitHub Personal Access Token</label>
+                    <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>Owner (Username)</label>
+                    <input type="text" id="gh-owner" placeholder="例: user">
+                </div>
+                <div class="form-group">
+                    <label>Repository Name</label>
+                    <input type="text" id="gh-repo" placeholder="例: yotsuya-sake-">
+                </div>
+                <div class="form-group">
+                    <label>Branch</label>
+                    <input type="text" id="gh-branch" placeholder="main" value="main">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSettings()">キャンセル</button>
+                <button class="btn btn-primary" onclick="saveSettings()">設定を保存</button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast">保存しました</div>
 
     <script>
         let sakeData = [];
+        let dataSha = null; // GitHub API更新用のSHA
 
-        // 画像読み込みエラー時のフォールバック処理
-        window.handleImageError = function (img, jan) {
-            const retryExtensions = ['png', 'jpeg', 'JPG', 'PNG'];
-            let attempt = parseInt(img.dataset.attempt || 0);
+        // GitHub Config
+        const CONFIG_KEY = 'yotsuya_sake_gh_config';
+        let ghConfig = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
 
-            if (attempt >= retryExtensions.length) {
-                img.src = 'image/placeholder.jpg';
-                img.onerror = null;
-                return;
+        // Utils for Loading
+        function showLoading(msg = 'Loading...') {
+            document.getElementById('loading-text').innerText = msg;
+            document.getElementById('loading-overlay').classList.add('active');
+        }
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('active');
+        }
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // GitHub API Helper
+        async function ghApi(path, options = {}) {
+            if (!ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
+                throw new Error('GitHub設定が完了していません');
             }
+            const baseUrl = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${path}`;
+            const url = options.branch ? `${baseUrl}?ref=${options.branch}` : baseUrl;
 
-            const nextExt = retryExtensions[attempt];
-            img.src = `image/${jan}.${nextExt}`;
-            img.dataset.attempt = attempt + 1;
-        };
+            const headers = {
+                'Authorization': `token ${ghConfig.token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+            };
+
+            const res = await fetch(url, {
+                method: options.method || 'GET',
+                headers: headers,
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message || 'GitHub API Error');
+            }
+            return res.json();
+        }
+
+        // Base64 encode/decode (supports Unicode)
+        function toBase64(str) {
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+
+        function fromBase64(str) {
+            return decodeURIComponent(escape(window.atob(str)));
+        }
+
+        // --- Main Logic ---
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatusDisplay();
+            if (ghConfig.token) {
+                loadAdminData();
+            } else {
+                openSettings(); // 未設定なら設定画面を開く
+            }
+        });
+
+        function updateStatusDisplay() {
+            const bar = document.getElementById('gh-status-bar');
+            const text = document.getElementById('gh-status-text');
+            if (ghConfig.owner && ghConfig.repo) {
+                bar.style.display = 'block';
+                text.innerText = `${ghConfig.owner}/${ghConfig.repo} (${ghConfig.branch || 'main'})`;
+            } else {
+                bar.style.display = 'none';
+            }
+        }
 
         // データ読み込み
         async function loadAdminData() {
+            showLoading('データを取得中...');
             try {
-                const res = await fetch('sake_list.json?t=' + new Date().getTime()); // キャッシュ回避
-                sakeData = await res.json();
+                // GitHub APIからsake_list.jsonを取得
+                const res = await ghApi('sake_list.json', { branch: ghConfig.branch });
+                dataSha = res.sha; // 更新時に必要
+                const content = fromBase64(res.content);
+                sakeData = JSON.parse(content);
                 renderTable();
             } catch (e) {
-                alert('データの読み込みに失敗しました');
                 console.error(e);
+                alert('データの読み込みに失敗しました: ' + e.message);
+                // ローカルフォールバック（表示のみ）
+                if (sakeData.length === 0) {
+                    try {
+                        const localRes = await fetch('sake_list.json');
+                        sakeData = await localRes.json();
+                        renderTable();
+                        showToast('※ローカルデータを表示中（編集不可）');
+                    } catch (e2) { }
+                }
+            } finally {
+                hideLoading();
             }
         }
 
@@ -308,72 +528,40 @@
 
             sakeData.forEach((item, index) => {
                 const tr = document.createElement('tr');
-
-                // 非表示フラグ
                 const isHidden = item.isHidden === true;
                 if (isHidden) tr.classList.add('status-hidden');
 
-                // 画像パス
                 const jan = item["720mL500mLJAN"];
+                // GitHub Pagesなどを想定し、相対パスで画像参照
                 const imgSrc = jan ? `image/${jan}.jpg` : 'image/placeholder.jpg';
 
                 tr.innerHTML = `
-          <td><span class="${isHidden ? 'status-hidden' : 'status-active'}" style="padding:2px 6px; border-radius:4px; font-size:0.8rem;">${isHidden ? '非表示' : '公開'}</span></td>
-          <td><img src="${imgSrc}" style="width:40px; height:40px; object-fit:contain;" onerror="handleImageError(this, '${jan}')"></td>
-          <td style="font-weight:bold;">${item["商品名"] || '(名称未設定)'}</td>
-          <td>${item["蔵元"] || ''}</td>
-          <td>${item["産地"] || ''}</td>
-          <td>
-            1.8L: ${item["1800mL価格税抜"] || '-'}<br>
-            720ml: ${item["720mL500mL価格税抜"] || '-'}
-          </td>
-          <td>${jan || ''}</td>
-          <td>
-            <button class="action-btn btn-edit" onclick="editItem(${index})">編集</button>
-            <button class="action-btn btn-visibility" onclick="toggleVisibility(${index})">${isHidden ? '公開' : '非表示'}</button>
-            <button class="action-btn btn-delete" onclick="deleteItem(${index})">削除</button>
-          </td>
-        `;
+                  <td><span class="${isHidden ? 'status-hidden' : 'status-active'}" style="padding:2px 6px; border-radius:4px; font-size:0.8rem;">${isHidden ? '非表示' : '公開'}</span></td>
+                  <td><img src="${imgSrc}" style="width:40px; height:40px; object-fit:contain;" onerror="this.onerror=null;this.src='image/placeholder.jpg';"></td>
+                  <td style="font-weight:bold;">${item["商品名"] || '(名称未設定)'}</td>
+                  <td>${item["蔵元"] || ''}</td>
+                  <td>${item["産地"] || ''}</td>
+                  <td>
+                    1.8L: ${item["1800mL価格税抜"] || '-'}<br>
+                    720ml: ${item["720mL500mL価格税抜"] || '-'}
+                  </td>
+                  <td>${jan || ''}</td>
+                  <td>
+                    <button class="action-btn btn-edit" onclick="editItem(${index})">編集</button>
+                    <button class="action-btn btn-visibility" onclick="toggleVisibility(${index})">${isHidden ? '公開' : '非表示'}</button>
+                    <button class="action-btn btn-delete" onclick="deleteItem(${index})">削除</button>
+                  </td>
+                `;
                 tbody.appendChild(tr);
             });
         }
 
-        // モーダル開閉
-        const modal = document.getElementById('edit-modal');
-        function openModal() {
-            // 新規登録モード
-            document.getElementById('modal-title').innerText = '新規商品登録';
-            document.getElementById('edit-index').value = '-1'; // 新規フラグ
-            document.getElementById('sake-form').reset();
-            modal.classList.add('active');
-        }
+        // 編集・保存ロジック
+        async function saveData() {
+            if (!dataSha && !confirm('データのSHAが取得できていません。強制上書きしますか？(競合の可能性があります)')) return;
 
-        function closeModal() {
-            modal.classList.remove('active');
-        }
+            showLoading('保存中...');
 
-        // 編集モード
-        window.editItem = function (index) {
-            const item = sakeData[index];
-            document.getElementById('modal-title').innerText = '商品編集';
-            document.getElementById('edit-index').value = index;
-
-            document.getElementById('input-name').value = item["商品名"] || "";
-            document.getElementById('input-kuramoto').value = item["蔵元"] || "";
-            document.getElementById('input-sanchi').value = item["産地"] || "";
-            document.getElementById('input-grade').value = item["グレード"] || "";
-            document.getElementById('input-price1800').value = item["1800mL価格税抜"] || "";
-            document.getElementById('input-price720').value = item["720mL500mL価格税抜"] || "";
-            document.getElementById('input-jan720').value = item["720mL500mLJAN"] || "";
-            document.getElementById('input-jan1800').value = item["1800mL　JAN"] || "";
-            document.getElementById('input-comment').value = item["コメント"] || "";
-            document.getElementById('input-hidden').checked = item.isHidden === true;
-
-            modal.classList.add('active');
-        }
-
-        // 保存処理
-        window.saveData = async function () {
             const index = parseInt(document.getElementById('edit-index').value);
             const isNew = index === -1;
 
@@ -391,59 +579,217 @@
             };
 
             if (isNew) {
-                // 先頭に追加
                 sakeData.unshift(newItem);
             } else {
-                // 既存データを更新（入力されていないフィールドが消えないようにマージも検討すべきだが、今回はフォームにあるものが主要データなので上書き）
-                // ただし既存の不明なプロパティを消したくない場合は工夫が必要。今回は簡易的にマージ
                 sakeData[index] = { ...sakeData[index], ...newItem };
             }
 
-            await syncToServer();
-            closeModal();
-        }
-
-        // 削除処理
-        window.deleteItem = async function (index) {
-            if (!confirm('本当に削除してもよろしいですか？')) return;
-            sakeData.splice(index, 1);
-            await syncToServer();
-        }
-
-        // 表示・非表示切り替え
-        window.toggleVisibility = async function (index) {
-            sakeData[index].isHidden = !sakeData[index].isHidden;
-            await syncToServer();
-        }
-
-        // サーバーへ同期
-        async function syncToServer() {
             try {
-                const res = await fetch('/api/save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(sakeData)
+                // GitHubへPUT
+                const content = toBase64(JSON.stringify(sakeData, null, 2));
+                const res = await ghApi('sake_list.json', {
+                    method: 'PUT',
+                    body: {
+                        message: `Update sake data from Admin Page (${new Date().toISOString()})`,
+                        content: content,
+                        sha: dataSha,
+                        branch: ghConfig.branch
+                    }
                 });
 
-                if (!res.ok) throw new Error('サーバーエラー');
-
-                const result = await res.json();
-                // UI更新
+                dataSha = res.content.sha; // 新しいSHAを保持
+                showToast('GitHubに保存しました');
+                closeModal();
                 renderTable();
-                showToast('保存しました');
+
             } catch (e) {
-                alert('保存に失敗しました: ' + e.message);
+                alert('保存エラー: ' + e.message);
+                console.error(e);
+            } finally {
+                hideLoading();
             }
         }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+        async function toggleVisibility(index) {
+            sakeData[index].isHidden = !sakeData[index].isHidden;
+            // 可視性変更だけでも保存するか、UIだけ変えるか。
+            // ここでは即時保存する実装にする（ただし編集SHAの問題に注意）
+            // 簡易化のため一旦 saveData相当の処理を行う
+
+            showLoading('状態更新中...');
+            try {
+                const content = toBase64(JSON.stringify(sakeData, null, 2));
+                const res = await ghApi('sake_list.json', {
+                    method: 'PUT',
+                    body: {
+                        message: `Update visibility from Admin Page`,
+                        content: content,
+                        sha: dataSha,
+                        branch: ghConfig.branch
+                    }
+                });
+                dataSha = res.content.sha;
+                renderTable();
+                showToast('更新しました');
+            } catch (e) {
+                alert('エラー: ' + e.message);
+                // 失敗したら戻す
+                sakeData[index].isHidden = !sakeData[index].isHidden;
+            } finally {
+                hideLoading();
+            }
         }
 
-        // 画像検索（Google画像検索を別タブで開く）
+        async function deleteItem(index) {
+            if (!confirm('本当に削除してもよろしいですか？')) return;
+            sakeData.splice(index, 1);
+
+            showLoading('削除中...');
+            try {
+                const content = toBase64(JSON.stringify(sakeData, null, 2));
+                const res = await ghApi('sake_list.json', {
+                    method: 'PUT',
+                    body: {
+                        message: `Delete item from Admin Page`,
+                        content: content,
+                        sha: dataSha,
+                        branch: ghConfig.branch
+                    }
+                });
+                dataSha = res.content.sha;
+                renderTable();
+                showToast('削除しました');
+            } catch (e) {
+                alert('エラー: ' + e.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 画像アップロード
+        async function uploadImageFile() {
+            const fileInput = document.getElementById('input-image-file');
+            const file = fileInput.files[0];
+            const jan720 = document.getElementById('input-jan720').value;
+            const jan1800 = document.getElementById('input-jan1800').value;
+            const jan = jan720 || jan1800; // JAN優先順
+
+            if (!file) {
+                alert('ファイルを選択してください');
+                return;
+            }
+            if (!jan) {
+                alert('JANコードを入力してください（ファイル名決定に必要です）');
+                return;
+            }
+
+            // 拡張子取得
+            const ext = file.name.split('.').pop();
+            const filename = `${jan}.${ext}`; // 本来は小文字化など統一したほうがいいがそのまま
+            const path = `image/${filename}`;
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                const contentBase64 = e.target.result.split(',')[1]; // data:image/jpeg;base64,..... から中身だけ抽出
+
+                showLoading('画像をアップロード中...');
+                try {
+                    // 既存ファイルのチェック（SHA取得のため）
+                    let sha = null;
+                    try {
+                        const checkRes = await ghApi(path, { branch: ghConfig.branch });
+                        sha = checkRes.sha;
+                    } catch (e) {
+                        // 404なら新規作成なので無視
+                    }
+
+                    await ghApi(path, {
+                        method: 'PUT',
+                        body: {
+                            message: `Upload image ${filename}`,
+                            content: contentBase64,
+                            sha: sha, // 新規ならnull(undefined)でOKか要検証 -> API仕様ではomitでおｋ
+                            branch: ghConfig.branch
+                        }
+                    });
+
+                    showToast('画像をアップロードしました');
+                    fileInput.value = ''; // クリア
+                } catch (err) {
+                    alert('アップロード失敗: ' + err.message);
+                    console.error(err);
+                } finally {
+                    hideLoading();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- Modal/Settings UI ---
+        const editModal = document.getElementById('edit-modal');
+        const settingsModal = document.getElementById('settings-modal');
+
+        function openModal() {
+            document.getElementById('modal-title').innerText = '新規商品登録';
+            document.getElementById('edit-index').value = '-1';
+            document.getElementById('sake-form').reset();
+            editModal.classList.add('active');
+        }
+        function closeModal() {
+            editModal.classList.remove('active');
+        }
+
+        window.editItem = function (index) {
+            const item = sakeData[index];
+            document.getElementById('modal-title').innerText = '商品編集';
+            document.getElementById('edit-index').value = index;
+
+            document.getElementById('input-name').value = item["商品名"] || "";
+            document.getElementById('input-kuramoto').value = item["蔵元"] || "";
+            document.getElementById('input-sanchi').value = item["産地"] || "";
+            document.getElementById('input-grade').value = item["グレード"] || "";
+            document.getElementById('input-price1800').value = item["1800mL価格税抜"] || "";
+            document.getElementById('input-price720').value = item["720mL500mL価格税抜"] || "";
+            document.getElementById('input-jan720').value = item["720mL500mLJAN"] || "";
+            document.getElementById('input-jan1800').value = item["1800mL　JAN"] || "";
+            document.getElementById('input-comment').value = item["コメント"] || "";
+            document.getElementById('input-hidden').checked = item.isHidden === true;
+
+            editModal.classList.add('active');
+        }
+
+        // Settings
+        function openSettings() {
+            document.getElementById('gh-token').value = ghConfig.token || '';
+            document.getElementById('gh-owner').value = ghConfig.owner || '';
+            document.getElementById('gh-repo').value = ghConfig.repo || '';
+            document.getElementById('gh-branch').value = ghConfig.branch || 'main';
+            settingsModal.classList.add('active');
+        }
+        function closeSettings() {
+            settingsModal.classList.remove('active');
+        }
+        function saveSettings() {
+            const token = document.getElementById('gh-token').value.trim();
+            const owner = document.getElementById('gh-owner').value.trim();
+            const repo = document.getElementById('gh-repo').value.trim();
+            const branch = document.getElementById('gh-branch').value.trim();
+
+            if (!token || !owner || !repo) {
+                alert('すべての項目を入力してください');
+                return;
+            }
+
+            ghConfig = { token, owner, repo, branch };
+            localStorage.setItem(CONFIG_KEY, JSON.stringify(ghConfig));
+
+            closeSettings();
+            updateStatusDisplay();
+            showToast('設定を保存しました');
+            loadAdminData(); // データ再読み込み
+        }
+
+        // 画像検索（Google画像検索を別タブで開く）- 既存機能維持
         window.searchImage = function () {
             const name = document.getElementById('input-name').value;
             const kuramoto = document.getElementById('input-kuramoto').value;
@@ -456,45 +802,6 @@
             window.open(url, '_blank');
         }
 
-        // 画像URLアップロード
-        window.uploadImageFromUrl = async function () {
-            const url = document.getElementById('input-image-url').value;
-            const jan720 = document.getElementById('input-jan720').value;
-            // JANコードの優先度: 720ml > 1800ml
-            const jan = jan720 || document.getElementById('input-jan1800').value;
-
-            if (!url) {
-                alert('画像URLを入力してください');
-                return;
-            }
-            if (!jan) {
-                alert('JANコードを入力してください（画像ファイル名になります）');
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/upload_image_url', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url, jan: jan })
-                });
-
-                const result = await res.json();
-                if (result.status === 'success') {
-                    showToast('画像を保存しました');
-                    document.getElementById('input-image-url').value = ''; // クリア
-                    // プレビュー画像を更新するためにリロードなどを促すか、あるいは強制リロードでも可
-                    // ここでは簡易的に保存完了だけ伝える
-                } else {
-                    alert('エラー: ' + result.message);
-                }
-
-            } catch (e) {
-                alert('通信エラー: ' + e.message);
-            }
-        }
-
-        loadAdminData();
     </script>
 </body>
 
