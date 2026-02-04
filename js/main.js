@@ -57,12 +57,15 @@ function uncheckAll() {
   selectedIndices.clear();
 }
 
-function loadData() {
+async function loadData() {
   try {
-    if (typeof sakeData === 'undefined') {
-      throw new Error('データが読み込めませんでした。(js/data.js check)');
+    // キャッシュ回避のために現在時刻をパラメータに付与(http/httpsのみ)
+    const url = 'sake_list.json' + (location.protocol.startsWith('http') ? '?t=' + new Date().getTime() : '');
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
-    data = sakeData; // グローバル変数から取得
+    data = await res.json();
     populateSearchMenus(data);
     filterData();
   } catch (error) {
@@ -260,17 +263,20 @@ function filterData() {
     const price1800 = Number(item["1800mL価格税抜"]) || 0;
     const price720 = Number(item["720mL500mL価格税抜"]) || 0;
 
-    const isPriceInRange = (price) => {
-      if (price <= 0) return false;
-      if (minPrice !== null && price < minPrice) return false;
-      if (maxPrice !== null && price > maxPrice) return false;
-      return true;
-    };
+    // 価格フィルタが設定されている場合のみ、価格の有効性をチェック
+    if (minPrice !== null || maxPrice !== null) {
+      const isPriceInRange = (price) => {
+        if (price <= 0) return false;
+        if (minPrice !== null && price < minPrice) return false;
+        if (maxPrice !== null && price > maxPrice) return false;
+        return true;
+      };
 
-    const valid1800 = isPriceInRange(price1800);
-    const valid720 = isPriceInRange(price720);
+      const valid1800 = isPriceInRange(price1800);
+      const valid720 = isPriceInRange(price720);
 
-    if (!valid1800 && !valid720) return false;
+      if (!valid1800 && !valid720) return false;
+    }
 
     return true;
   });
